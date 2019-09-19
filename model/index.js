@@ -59,6 +59,42 @@ const model = {
                 }else{
                     return {error : {type: 'error', text : 'Token not found'}};
                 }
+            },
+            login: async(param)=>{
+                let token = await authToken.createToken(param);
+                if(token){
+                    if(authToken.verifyToken(token)){
+                        try{
+                            r = await User.findOne({email:param.email});      
+                        }catch(e){
+                            return {error :{type: 'error', text: e.message}};
+                        }
+                        if(!r){
+                            return {error :{type: 'error', text: "Email and password is not valid"}};
+                        }else{
+                            const match = await bcrypt.compare(param.password, r.password);
+                            if(match){
+                                return {message: {type: "success"}, data: {token: token, user: r}} ;
+                            }else{
+                                return {error :{type: 'error', text: "Email and password is not valid"}};     
+                            }                            
+                        }
+
+                    }else{
+                        return {error :{type: 'error', text :'Token is not valid'}};
+                    }
+                }else{
+                    return {error: {type: 'error', text : 'Token not found'}};
+                }
+
+            },
+            getUser: async()=>{
+                try{
+                   r = await User.find({}) ;
+                }catch(e){
+                    return {error : { type: 'error', text : e.message}};
+                }   
+                return {message: {type: 'success'}, data:r};   
             }
         }
     }
